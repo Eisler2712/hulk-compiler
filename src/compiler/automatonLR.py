@@ -1,9 +1,10 @@
-from .grammar import GrammarProduction, GrammarToken, Grammar, EOF
-from typing import List, Dict, Set, Tuple
-from LRtable import LRTable, NodeAction, Action
-from typing import Generic, TypeVar
 from abc import ABC, abstractmethod
 from queue import Queue
+from typing import Generic, TypeVar
+from typing import List, Dict, Set, Tuple
+
+from tableLR import NodeAction, Action, TableLR
+from .grammar import GrammarProduction, GrammarToken, Grammar, EOF
 
 T = TypeVar('T', bound='ItemLR')
 
@@ -150,7 +151,7 @@ class AutomatonLR(ABC, Generic[T]):
             node_actions.append(node_action)
 
         if result:
-            LRTable.build(name, node_actions)
+            TableLR.build(name, node_actions)
 
         return result
 
@@ -171,4 +172,3 @@ class AutomatonLR(ABC, Generic[T]):
     @abstractmethod
     def _build_reduce(self, node: Node, node_action: NodeAction, result: bool) -> bool:
         pass
-
