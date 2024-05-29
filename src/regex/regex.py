@@ -1,10 +1,11 @@
-from .regex_core import RegexResult, RegexToken
-from .regex_lexer import lexer
 from typing import List
+
+from src.compiler.automaton import Automaton
 from .regex_ast import RegexAst
+from .regex_core import RegexResult, RegexToken
 from .regex_grammar import regex_grammar
+from .regex_lexer import lexer
 from .regex_parser import regex_parser, regex_to_grammar
-from compiler_tools.automaton import Automaton
 
 
 class Regex():

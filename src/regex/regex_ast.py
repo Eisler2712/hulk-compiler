@@ -1,5 +1,6 @@
 from abc import ABC, abstractproperty
-from compiler_tools.automaton import Automaton, pattern_to_automaton
+
+from src.compiler.automaton import Automaton, pattern_to_automaton
 
 
 class MatchResult():
