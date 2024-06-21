@@ -1,4 +1,4 @@
-from automatonLR import Node,AutomatonLR
+from .automatonLR import Node,AutomatonLR
 from .grammar import GrammarProduction, GrammarToken, Grammar, EOF
 from .tableLR import NodeAction, Action
 from .itemLR import ItemLR

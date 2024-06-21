@@ -1,4 +1,4 @@
-from src.compiler.attributed_grammar import AttributedGrammar, AttributedRule
+from compiler.attributed_grammar import AttributedGrammar, AttributedRule
 from .regex_ast import *
 from .regex_core import RegexToken
 

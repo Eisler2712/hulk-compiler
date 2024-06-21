@@ -2,7 +2,7 @@ from abc import ABC
 from collections import OrderedDict
 from typing import List, Tuple
 
-from src.compiler.lexer import LexerToken
+from compiler.lexer import LexerToken
 
 
 class SemanticError(Exception):

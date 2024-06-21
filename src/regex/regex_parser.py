@@ -1,10 +1,10 @@
 from typing import List
 
-from src.compiler.automatonSLR1 import AutomatonSLR1
-from src.compiler.grammar import GrammarToken
-from src.compiler.parser import Parser
-from src.compiler.parser_out import ParseResult
-from src.compiler.tableLR import TableLR
+from compiler.automatonSLR1 import AutomatonSLR1
+from compiler.grammar import GrammarToken
+from compiler.parser import Parser
+from compiler.parser_out import ParseResult
+from compiler.tableLR import TableLR
 from .regex_core import RegexToken
 from .regex_grammar import regex_grammar
 

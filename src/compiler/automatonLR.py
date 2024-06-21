@@ -3,7 +3,7 @@ from queue import Queue
 from typing import Generic, TypeVar
 from typing import List, Dict, Set, Tuple
 
-from tableLR import NodeAction, Action, TableLR
+from .tableLR import NodeAction, Action, TableLR
 from .grammar import GrammarProduction, GrammarToken, Grammar, EOF
 
 T = TypeVar('T', bound='ItemLR')

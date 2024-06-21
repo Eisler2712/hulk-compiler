@@ -1,5 +1,5 @@
 from typing import Tuple, List
-from automaton import Automaton
+from compiler.automaton import Automaton
 import json
 
 IGNORE: str = 'IGNORE'

@@ -1,4 +1,4 @@
-from semanticCore import *
+from .semanticCore import *
 
 OBJECT = Class('Object')
 STRING = Class('String')

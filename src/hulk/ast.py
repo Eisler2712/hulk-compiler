@@ -2,8 +2,8 @@ from abc import ABC
 from enum import Enum
 from typing import List
 
-from src.compiler.lexer import LexerToken
-from src.hulk.semanticTools import Type
+from compiler.lexer import LexerToken
+from hulk.semanticTools import Type
 
 
 class ASTNode(ABC):

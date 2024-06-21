@@ -1,6 +1,6 @@
 from abc import ABC, abstractproperty
 
-from src.compiler.automaton import Automaton, pattern_to_automaton
+from compiler.automaton import Automaton, pattern_to_automaton
 
 
 class MatchResult():

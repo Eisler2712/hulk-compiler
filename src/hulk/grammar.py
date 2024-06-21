@@ -1,5 +1,5 @@
-from src.compiler.attributed_grammar import AttributedGrammar, AttributedRule
-from src.hulk.ast import *
+from compiler.attributed_grammar import AttributedGrammar, AttributedRule
+from hulk.ast import *
 
 hulk_grammar = AttributedGrammar()
 

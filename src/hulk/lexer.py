@@ -1,6 +1,6 @@
 from regex.regex import Regex
-from .constants import *
-from src.compiler.lexer import Lexer
+from hulk.constants import *
+from compiler.lexer import Lexer
 
 
 def get_special_token_pattern(token: str) -> str:

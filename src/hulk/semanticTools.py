@@ -1,6 +1,6 @@
-from defined import *
+from .defined import *
 from typing import List, Dict
-from src.compiler.lexer import LexerToken
+from compiler.lexer import LexerToken
 
 
 def error_location(row, col) -> str:

@@ -1,7 +1,7 @@
-from src.compiler import visitor
-from ast import *
-from semanticTools import *
-from defined import *
+from compiler import visitor
+from .ast import *
+from .semanticTools import *
+from .defined import *
 
 
 class TypeCollector(object):

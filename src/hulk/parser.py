@@ -1,11 +1,11 @@
 from typing import List
 
-from src.compiler.automatonLR1 import AutomatonLR1
-from src.compiler.grammar import GrammarToken
-from src.compiler.lexer import LexerToken
-from src.compiler.parser import Parser, ParseResult
-from src.compiler.tableLR import TableLR
-from src.hulk.constants import *
+from compiler.automatonLR1 import AutomatonLR1
+from compiler.grammar import GrammarToken
+from compiler.lexer import LexerToken
+from compiler.parser import Parser, ParseResult
+from compiler.tableLR import TableLR
+from hulk.constants import *
 from .grammar import hulk_grammar
 
 

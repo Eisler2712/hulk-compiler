@@ -1,6 +1,6 @@
 from typing import List
 
-from src.compiler.automaton import Automaton
+from compiler.automaton import Automaton
 from .regex_ast import RegexAst
 from .regex_core import RegexResult, RegexToken
 from .regex_grammar import regex_grammar

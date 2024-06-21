@@ -3,9 +3,9 @@ from typing import Dict, Set, List, Tuple
 import json
 
 class State:
-    def __init__(self, index : int, finished) -> None:
+    def __init__(self, index : int, finished=False) -> None:
         self.index = index
-        self.finished:bool = finished
+        self.finished: bool = finished
         self.transitions: Dict[str,State] = {}
         self.epsilon_transitions: Set['State'] = set()
         self.complement: State|None = None
@@ -49,20 +49,17 @@ class Automaton:
 
         self.states: List[State] = []if isCopy else [self.initState]
 
-    @staticmethod
+
     def add_transition(self, fromState: State, symbol: str, toState: State) -> None:
         fromState.add_transition(symbol,toState)
 
-    @staticmethod
-    def add_epsilon_transition(fromState: State, toState: State) -> None:
+    def add_epsilon_transition(self,fromState: State, toState: State) -> None:
         fromState.add_epsilon_transition(toState)
 
-    @staticmethod
-    def add_final_state(state: State) -> None:
+    def add_final_state(self,state: State) -> None:
         state.finished = True
 
-    @staticmethod
-    def add_complement(fromState: State, toState: State) -> None:
+    def add_complement(self,fromState: State, toState: State) -> None:
         fromState.complement = toState
 
     def get_new_state(self, state=None) -> State:

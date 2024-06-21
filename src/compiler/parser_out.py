@@ -23,13 +23,13 @@ class ParseResult:
         self.error = error
         self.derivation_tree = ParseResult.__build_tree(derivations) if self.ok else None
 
-    def __build_tree(self, derivations: List[GrammarProduction]) -> DerivationTree:
+    def __build_tree(derivations: List[GrammarProduction]) -> DerivationTree:
         root = DerivationTree(derivations[0].head)
         ParseResult.__build_tree_node(root, derivations, 0)
 
         return root
 
-    def __build_tree_node(self, node: DerivationTree, derivations: List[GrammarProduction], index: int) -> int:
+    def __build_tree_node(node: DerivationTree, derivations: List[GrammarProduction], index: int) -> int:
         node.production_ind = derivations[index].ind
 
         tokens = derivations[index].body.copy()
