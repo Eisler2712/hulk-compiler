@@ -1,32 +1,34 @@
-from .automatonLR import Node
-from .grammar import GrammarProduction, GrammarToken, Grammar, EOF
-from .tableLR import NodeAction, Action
-from .itemLR import ItemLR
-from .automatonLR import AutomatonLR
 from typing import Dict, List, Tuple
 
+from .automatonLR import AutomatonLR
+from .automatonLR import Node
+from .grammar import GrammarProduction, GrammarToken, Grammar, EOF
+from .itemLR import ItemLR1
+from .tableLR import NodeAction, Action
 
-class AutomatonLR1(AutomatonLR[ItemLR]):
+
+class AutomatonLR1(AutomatonLR[ItemLR1]):
     def __init__(self, name: str, grammar: Grammar):
         super().__init__(name, grammar)
 
     def _build_grammar(self):
         self.grammar.calculate_first()
 
-    def _get_item(self, production: GrammarProduction, index: int, teal: GrammarToken) -> ItemLR:
-        item = ItemLR(len(self.items), production, index, teal)
+    def _get_item(self, production: GrammarProduction, index: int, teal: GrammarToken) -> ItemLR1:
+        item = ItemLR1(len(self.items), production, index, teal)
         self.items.append(item)
 
         return item
 
-    def _get_item_main(self) -> ItemLR:
+    def _get_item_main(self) -> ItemLR1:
         return [
-            item for item in self.items if item.production.head == self.grammar.main and item.index == 0 and item.teal == EOF()][0]
+            item for item in self.items if
+            item.production.head == self.grammar.main and item.index == 0 and item.teal == EOF()][0]
 
     def _build_items(self):
-        head_to_item: Dict[GrammarToken, List[ItemLR]] = {}
+        head_to_item: Dict[GrammarToken, List[ItemLR1]] = {}
         teal_production_to_item: Dict[Tuple[GrammarProduction,
-                                            GrammarToken], List[ItemLR]] = {}
+        GrammarToken], List[ItemLR1]] = {}
 
         for t in self.grammar.non_terminals:
             head_to_item[t] = []
@@ -50,7 +52,7 @@ class AutomatonLR1(AutomatonLR[ItemLR]):
             for y in head_to_item[x.production.body[x.index]]:
                 if y.index == 0:
                     w = self.grammar.calculate_sentence_first(
-                        x.production.body[x.index+1:]+[x.teal])
+                        x.production.body[x.index + 1:] + [x.teal])
                     if y.teal in w:
                         x.add_eof_transition(y)
 
@@ -59,11 +61,11 @@ class AutomatonLR1(AutomatonLR[ItemLR]):
                 continue
 
             for y in teal_production_to_item[(x.production, x.teal)]:
-                if  y.index == x.index + 1 :
+                if y.index == x.index + 1:
                     x.add_transition(
                         x.production.body[x.index], y)
 
-    def _build_reduce(self, node: Node[ItemLR], node_action: NodeAction, result: bool) -> bool:
+    def _build_reduce(self, node: Node[ItemLR1], node_action: NodeAction, result: bool) -> bool:
         for item in node.items:
             if item.index == len(item.production.body):
                 if item.production.head == self.grammar.main:

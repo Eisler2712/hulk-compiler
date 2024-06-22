@@ -122,7 +122,7 @@ class Grammar:
                 head = production.head
                 body = production.body
 
-                all_epsilon = True
+                all_eof = True
                 for token in body:
                     for first in self.firsts[token]:
                         if first not in self.firsts[head]:
@@ -130,10 +130,10 @@ class Grammar:
                             changed = True
 
                     if EOF() not in self.firsts[token]:
-                        all_epsilon = False
+                        all_eof = False
                         break
 
-                if all_epsilon and EOF() not in self.firsts[head]:
+                if all_eof and EOF() not in self.firsts[head]:
                     self.firsts[head].add(EOF())
                     changed = True
 
@@ -142,16 +142,16 @@ class Grammar:
     ) -> set[GrammarToken | EOF]:
         result = set()
 
-        all_epsilon = True
+        all_eof = True
         for token in tokens:
             for first in self.firsts[token]:
                 result.add(first)
 
             if EOF() not in self.firsts[token]:
-                all_epsilon = False
+                all_eof = False
                 break
 
-        if all_epsilon and EOF() not in result:
+        if all_eof and EOF() not in result:
             result.add(EOF())
 
         return result

@@ -1,6 +1,7 @@
-from typing import Tuple, List
-from compiler.automaton import Automaton
 import json
+from typing import Tuple, List
+
+from compiler.automaton import Automaton
 
 IGNORE: str = 'IGNORE'
 
@@ -62,7 +63,7 @@ class Lexer:
         is_final = False
 
         while True:
-            is_final = current_state.is_final
+            is_final = current_state.finished
 
             if index == len(text):
                 break
@@ -91,7 +92,7 @@ class Lexer:
             ignore = [] if self.ignore_automaton is None else [(
                 IGNORE, self.ignore_automaton)]
 
-            for t, a in (self.tokens_automaton+ignore):
+            for t, a in (self.tokens_automaton + ignore):
                 current_result, ok = self.match(text, index, a)
 
                 if ok and len(current_result) > len(result):

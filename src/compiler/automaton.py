@@ -1,74 +1,86 @@
+import json
 from queue import Queue
 from typing import Dict, Set, List, Tuple
-import json
+
 
 class State:
-    def __init__(self, index : int, finished=False) -> None:
-        self.index = index
+    def __init__(self, ind: int, finished=False) -> None:
+        self.ind = ind
         self.finished: bool = finished
-        self.transitions: Dict[str,State] = {}
-        self.epsilon_transitions: Set['State'] = set()
-        self.complement: State|None = None
+        self.transitions: Dict[str, 'State'] = {}
+        self.eof_transitions: Set['State'] = set()
+        self.complement: State = None
 
     def add_transition(self, symbol: str, state: 'State') -> None:
         self.transitions[symbol] = state
 
-    def add_epsilon_transition(self, state: 'State') -> None:
-        self.epsilon_transitions.add(state)
+    def add_eof_transition(self, state: 'State') -> None:
+        self.eof_transitions.add(state)
 
-    def goTo(self, symbol:str) -> 'State | None':
-        if symbol not in self.transitions:
+    def goto(self, symbol: str) -> 'State | None':
+        if symbol in self.transitions:
             return self.transitions[symbol]
+
         return self.complement
 
-    def goToEpsilon_transition(self) -> List['State']:
-        return [s for s in self.epsilon_transitions]
+    def goto_eof(self) -> List['State']:
+        return [s for s in self.eof_transitions]
 
-    def toJson(self):
+    def __str__(self) -> str:
+        return f'q{self.ind}'
+
+    def __hash__(self) -> int:
+        return self.ind
+
+    def __eq__(self, o: object) -> bool:
+        return self.ind == o.ind
+
+    def to_json(self):
         result = {}
 
-        for k,v in self.transitions.items():
+        for k, v in self.transitions.items():
             if not k in result:
                 result[k] = []
-            result[k].append(v.index)
+            result[k].append(v.ind)
 
-        result["epsilon_transitions"] = []
+        result["eof"] = []
 
-        for v in self.epsilon_transitions:
-            result["epsilon_transitions"].append(v.index)
+        for v in self.eof_transitions:
+            result['eof'].append(v.ind)
 
         if self.complement is not None:
-            result["default"] = self.complement.index
+            result["default"] = self.complement.ind
 
-        result['finished'] = self.finished
+        result["finished"] = self.finished
+
+        return result
 
 
 class Automaton:
-    def __init__(self, isCopy=False) -> None:
-        self.initState: State = None if isCopy else State(0)
+    def __init__(self, copy=False) -> None:
+        self.initState: State = None if copy else State(0)
 
-        self.states: List[State] = []if isCopy else [self.initState]
+        self.states: List[State] = [] if copy else [self.initState]
 
+    def add_transition(self, from_state: State, symbol: str, to_state: State) -> None:
+        from_state.add_transition(symbol, to_state)
 
-    def add_transition(self, fromState: State, symbol: str, toState: State) -> None:
-        fromState.add_transition(symbol,toState)
+    def add_eof_transition(self, from_state: State, to_state: State) -> None:
+        from_state.add_eof_transition(to_state)
 
-    def add_epsilon_transition(self,fromState: State, toState: State) -> None:
-        fromState.add_epsilon_transition(toState)
-
-    def add_final_state(self,state: State) -> None:
+    def add_final_state(self, state: State) -> None:
         state.finished = True
 
-    def add_complement(self,fromState: State, toState: State) -> None:
-        fromState.complement = toState
+    def add_complement(self, from_state: State, to_state: State) -> None:
+        from_state.complement = to_state
 
     def get_new_state(self, state=None) -> State:
-        newState = state if state is not None else State(
+        new_state = state if state is not None else State(
             len(self.states))
-        newState.index = len(self.states)
+        new_state.ind = len(self.states)
 
-        self.states.append(newState)
-        return newState
+        self.states.append(new_state)
+        return new_state
 
     @property
     def final_states(self) -> List[State]:
@@ -79,28 +91,28 @@ class Automaton:
         return self.__match(self.initState, string, 0, visited)
 
     def __match(self, state: State, string: str, index, visited: Set[Tuple[int, int]]) -> bool:
-        if (state.index, index) in visited:
+        if (state.ind, index) in visited:
             return False
 
-        visited.add((state.index, index))
+        visited.add((state.ind, index))
 
         if index == len(string):
             return state.finished
 
-        for epsilon_state in state.epsilon_transitions:
-            if self.__match(epsilon_state, string, index, visited):
+        for eof_state in state.eof_transitions:
+            if self.__match(eof_state, string, index, visited):
                 return True
 
-        goTo = state.goTo(string[index])
+        goto = state.goto(string[index])
 
-        if goTo is not None:
-            return self.__match(goTo, string, index+1, visited)
+        if goto is not None:
+            return self.__match(goto, string, index + 1, visited)
 
         return False
 
     def join(self, automaton: 'Automaton') -> 'Automaton':
         automaton = automaton.copy()
-        self.add_epsilon_transition(self.initState, automaton.initState)
+        self.add_eof_transition(self.initState, automaton.initState)
 
         for state in automaton.states:
             self.get_new_state(state)
@@ -110,8 +122,8 @@ class Automaton:
     def concat(self, automaton: 'Automaton') -> 'Automaton':
         automaton = automaton.copy()
         for state in self.final_states:
-            self.add_epsilon_transition(state, automaton.initState)
-            state.is_final = False
+            self.add_eof_transition(state, automaton.initState)
+            state.finished = False
 
         for state in automaton.states:
             self.get_new_state(state)
@@ -120,48 +132,49 @@ class Automaton:
 
     def many(self) -> 'Automaton':
         for state in self.final_states:
-            self.add_epsilon_transition(state, self.initState)
+            self.add_eof_transition(state, self.initState)
 
-        self.initState.is_final = True
+        self.initState.finished = True
 
         return self
 
     def copy(self) -> 'Automaton':
-        newAutomaton = Automaton(True)
+        new_automaton = Automaton(True)
 
         for _ in range(len(self.states)):
-            newAutomaton.get_new_state()
+            new_automaton.get_new_state()
 
-        newAutomaton.initState = newAutomaton.states[self.initState.index]
+        new_automaton.initState = new_automaton.states[self.initState.ind]
 
         for state in self.states:
-            for epsilon_state in state.epsilon_transitions:
-                newAutomaton.add_epsilon_transition(
-                    newAutomaton.states[state.index], newAutomaton.states[epsilon_state.index])
+            for eof_state in state.eof_transitions:
+                new_automaton.add_eof_transition(
+                    new_automaton.states[state.ind], new_automaton.states[eof_state.ind])
 
             for symbol, symbol_state in state.transitions.items():
-                newAutomaton.add_transition(
-                    newAutomaton.states[state.index], symbol, newAutomaton.states[symbol_state.index])
+                new_automaton.add_transition(
+                    new_automaton.states[state.ind], symbol, new_automaton.states[symbol_state.ind])
 
-            newAutomaton.states[state.index].finished = state.finished
-            newAutomaton.states[state.index].complement = None if state.complement is None else newAutomaton.states[
-                state.complement.index]
+            new_automaton.states[state.ind].finished = state.finished
+            new_automaton.states[state.ind].complement = None if state.complement is None else \
+                new_automaton.states[
+                    state.complement.ind]
 
-        return newAutomaton
+        return new_automaton
 
     def to_dfa(self) -> 'Automaton':
-        newAutomaton = Automaton()
-        newNodes: List[Tuple[State, Set[State]]] = []
+        new_automaton = Automaton()
+        new_nodes: List[Tuple[State, Set[State]]] = []
 
         initial = set([self.initState])
-        self.__goTo_epsilon(initial)
-        newNodes.append((newAutomaton.initState, initial))
+        self.__goto_eof(initial)
+        new_nodes.append((new_automaton.initState, initial))
 
-        newAutomaton.initState.finished = any(
+        new_automaton.initState.finished = any(
             state for state in initial if state.finished)
 
         q: Queue[Tuple[Automaton, Set[State]]] = Queue()
-        q.put(newNodes[0])
+        q.put(new_nodes[0])
 
         while not q.empty():
             node, states = q.get()
@@ -172,35 +185,36 @@ class Automaton:
                     symbols.add(s)
 
             for symbol in symbols:
-                goTo = self.__goTo_symbol(states, symbol)
+                goto = self.__goto_symbol(states, symbol)
 
-                self.__next_goTo(goTo, newAutomaton, node,
-                                 newNodes, q, symbol)
+                self.__next_goto(goto, new_automaton, node,
+                                 new_nodes, q, symbol)
 
-            goTo = self.__goTo_complement(states)
-            self.__next_goTo(goTo, newAutomaton, node, newNodes, q)
+            goto = self.__goto_complement(states)
+            self.__next_goto(goto, new_automaton, node, new_nodes, q)
 
-        return newAutomaton
+        return new_automaton
 
-    def __next_goTo(self, goTo: Set[State], newAutomaton: 'Automaton', node: 'State', newNodes: List[Tuple[State, Set[State]]], q: Queue, symbol: str | None = None):
-        if len(goTo) == 0:
+    def __next_goto(self, goto: Set[State], new_automaton: 'Automaton', node: State,
+                    new_nodes: List[Tuple[State, Set[State]]], q: Queue, symbol: str | None = None):
+        if len(goto) == 0:
             return
 
-        newNode = self.__get_node(newNodes, goTo)
+        new_node = self.__get_node(new_nodes, goto)
 
-        if newNode is None:
-            newNode = newAutomaton.get_new_state()
+        if new_node is None:
+            new_node = new_automaton.get_new_state()
 
-            if any(state.finished for state in goTo):
-                newAutomaton.add_final_state(newNode)
+            if any(state.finished for state in goto):
+                new_automaton.add_final_state(new_node)
 
-            newNodes.append((newNode, goTo))
-            q.put((newNode, goTo))
+            new_nodes.append((new_node, goto))
+            q.put((new_node, goto))
 
         if symbol is not None:
-            newAutomaton.add_transition(node, symbol, newNode)
+            new_automaton.add_transition(node, symbol, new_node)
         else:
-            newAutomaton.add_complement(node, newNode)
+            new_automaton.add_complement(node, new_node)
 
     def __get_node(self, nodes: List[Tuple[State, Set[State]]], states: Set[State]) -> State | None:
         for node, node_states in nodes:
@@ -209,20 +223,20 @@ class Automaton:
 
         return None
 
-    def __goTo_complement(self, states: Set[State]) -> Set[State]:
-        goTo = set([])
+    def __goto_complement(self, states: Set[State]) -> Set[State]:
+        goto = set([])
 
         for state in states:
             if state.complement is None:
                 continue
 
-            goTo.add(state.complement)
+            goto.add(state.complement)
 
-        self.__goTo_epsilon(goTo)
+        self.__goto_eof(goto)
 
-        return goTo
+        return goto
 
-    def __goTo_epsilon(self, states: Set[State]):
+    def __goto_eof(self, states: Set[State]):
         change = True
 
         while change:
@@ -230,26 +244,26 @@ class Automaton:
             aux = []
 
             for state in states:
-                for epsilon_state in state.goToEpsilon_transition():
-                    if epsilon_state not in states:
-                        aux.append(epsilon_state)
+                for eof_state in state.goto_eof():
+                    if eof_state not in states:
+                        aux.append(eof_state)
 
             for state in aux:
                 change = True
                 states.add(state)
 
-    def __goTo_symbol(self, states: Set[State], symbol: str) -> Set[State]:
-        goTo = set()
+    def __goto_symbol(self, states: Set[State], symbol: str) -> Set[State]:
+        goto = set()
 
         for state in states:
-            symbol_state = state.goTo(symbol)
+            symbol_state = state.goto(symbol)
             if symbol_state is None:
                 continue
-            goTo.add(symbol_state)
+            goto.add(symbol_state)
 
-        self.__goTo_epsilon(goTo)
+        self.__goto_eof(goto)
 
-        return goTo
+        return goto
 
     def load(self, name: str):
         cache = json.load(open(f"cache/{name}_automaton.json"))
@@ -263,33 +277,33 @@ class Automaton:
         result = []
 
         for v in self.states:
-            result.append(v.toJson())
+            result.append(v.to_json())
 
         return result
 
-    def from_json(self, jsonDict):
+    def from_json(self, json_dict):
         self.states.clear()
 
-        for _ in range(len(jsonDict)):
+        for _ in range(len(json_dict)):
             self.get_new_state()
 
-        for i, s in enumerate(jsonDict):
+        for i, s in enumerate(json_dict):
             for k, v in s.items():
                 if k == "eok":
                     for n in v:
-                        self.states[i].add_epsilon_transition(self.states[n])
+                        self.states[i].add_eof_transition(self.states[n])
                     continue
 
                 if k == "default":
                     self.states[i].complement = self.states[v]
                     continue
 
-                if k == 'is_final':
+                if k == 'finished':
                     self.states[i].finished = v
                     continue
 
                 for n in v:
-                    self.states[i].add_transition(self.states[n])
+                    self.states[i].add_transition(k, self.states[n])
 
         self.initState = self.states[0]
 
@@ -300,13 +314,10 @@ def pattern_to_automaton(pattern: str) -> Automaton:
     state = automaton.initState
 
     for symbol in pattern:
-        newState = automaton.get_new_state()
-        automaton.add_transition(state, symbol, newState)
-        state = newState
+        new_state = automaton.get_new_state()
+        automaton.add_transition(state, symbol, new_state)
+        state = new_state
 
     automaton.add_final_state(state)
 
     return automaton
-
-
-

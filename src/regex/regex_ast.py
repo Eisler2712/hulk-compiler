@@ -87,7 +87,7 @@ class RegexAnyChar(RegexAst):
     def automaton(self):
         a = Automaton()
         new_state = a.get_new_state()
-        a.add_complement(a.initial_state, new_state)
+        a.add_complement(a.initState, new_state)
         a.add_final_state(new_state)
 
         return a
@@ -130,13 +130,13 @@ class RegexNot(RegexAst):
         dfa = self.body.automaton.to_dfa()
         new_state = dfa.get_new_state()
         dfa.add_final_state(new_state)
-        dfa.add_complement(dfa.initial_state, new_state)
+        dfa.add_complement(dfa.initState, new_state)
 
         for s in dfa.states:
             if s == new_state:
                 continue
 
-            if s.is_final:
-                s.is_final = False
+            if s.finished:
+                s.finished = False
 
         return dfa
