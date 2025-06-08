@@ -113,7 +113,7 @@ class GeneratorProgram:
         self.declarations.append(code)
 
     def load_c_tools(self) -> str:
-        f = open("c_tools/c_tools.c", "r")
+        f = open("src/c_tools/c_tools.c", "r")
         c = f.read()
         f.close()
 
